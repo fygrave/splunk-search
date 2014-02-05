@@ -2,8 +2,10 @@ import argparse
 import json
 import sys
 
+import splunklib.binding as splunk_binding
 import cybox.bindings.cybox_core as cybox_core_binding
 from cybox.core import Observables
+from lxml import etree
 
 import ConfigParser
 
@@ -15,14 +17,14 @@ def read_cybox(input_file, isJson):
         observables = Observables.from_obj(observables_obj)
         return observables.to_dict()
     else:
-        with open(input_file, 'rb') as f:
+        with open(input_file, 'r') as f:
             return json.load(input_file)
 
 
 def read_openioc(input_file):
-    sys.stderr.write('Not yet implemented')
+    with open(input_file, 'r') as f:
+        ioc_tree etree.parse(f)
     return False
-
 
 def search_splunk(data):
     pass
@@ -48,6 +50,16 @@ def main():
     else:
         # Should never reach this due to the choices parameter specified for add_argument()
         sys.stderr.write("File type not properly specified, see --help for more.")
+        return
+
+    host = config.get('Splunk', 'host')
+    port = config.getint('Splunk', 'port')
+    username = config.get('Splunk', 'username')
+    password = config.get('Splunk', 'password')
+    try:
+        splunk_connection = splunk_binding.connect(host=host, port=port, username=username, password=password)
+    else:
+        sys.stderr.write('Could not connect to %s:%d as %s' % (host, port, username))
         return
 
     if ioc_data:
