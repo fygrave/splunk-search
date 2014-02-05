@@ -22,10 +22,7 @@ def read_cybox(input_file, isJson):
 
 
 def read_openioc(input_file):
-    with open(input_file, 'r') as f:
-        ioc_tree etree.parse(f)
-    return False
-
+    pass
 
 def search_splunk(connection, data):
     for each in data:
