@@ -32,8 +32,8 @@ def main():
     config = ConfigParser.ConfigParser()
 
     parser = argparse.ArgumentParser(description="Search Splunk for indicators in CybOX or OpenIOC files")
-    parser.addargument('input_file', help="Input file")
-    parser.addargument('-t', '--filetype', choices=['cybox', 'cybox-json', 'openioc'],
+    parser.add_argument('input_file', help="Input file")
+    parser.add_argument('-t', '--filetype', choices=['cybox', 'cybox-json', 'openioc'],
                        help="Type of file (optional). If specified, must be one of: cybox, cybox-json, openioc")
 
     args = parser.parse_args()
@@ -46,6 +46,7 @@ def main():
     elif args.filetype == "openioc":
         ioc_data = read_openioc(args.input_file)
     else:
+        # Should never reach this due to the choices parameter specified for add_argument()
         sys.stderr.write("File type not properly specified, see --help for more.")
         return
 
