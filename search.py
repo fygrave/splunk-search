@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 
-import splunklib.binding as splunk_binding
+import splunklib.client as splunk_client
 import cybox.bindings.cybox_core as cybox_core_binding
 from cybox.core import Observables
 from lxml import etree
@@ -26,8 +26,9 @@ def read_openioc(input_file):
         ioc_tree etree.parse(f)
     return False
 
-def search_splunk(data):
-    pass
+
+def search_splunk(connection, data):
+    for each in data:
 
 
 def main():
@@ -52,18 +53,24 @@ def main():
         sys.stderr.write("File type not properly specified, see --help for more.")
         return
 
+    try:
+        config.read('.splunkrc')
+    except:
+        sys.stderr.write("Could not read config file .splunkrc")
+        return
+
     host = config.get('Splunk', 'host')
     port = config.getint('Splunk', 'port')
     username = config.get('Splunk', 'username')
     password = config.get('Splunk', 'password')
     try:
-        splunk_connection = splunk_binding.connect(host=host, port=port, username=username, password=password)
+        splunk_connection = splunk_client.connect(host=host, port=port, username=username, password=password)
     else:
         sys.stderr.write('Could not connect to %s:%d as %s' % (host, port, username))
         return
 
     if ioc_data:
-        search_splunk(ioc_data)
+        search_splunk(splunk_connection, ioc_data)
 
 
 if __name__ == "__main__":
