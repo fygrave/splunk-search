@@ -3,9 +3,10 @@ import json
 import sys
 
 import splunklib.client as splunk_client
+import splunklib.results as splunk_results
 import cybox.bindings.cybox_core as cybox_core_binding
 from cybox.core import Observables
-from lxml import etree
+from cybox.objects.address_object import Address
 
 import ConfigParser
 
@@ -15,17 +16,28 @@ def read_cybox(input_file, isJson):
         # Based on https://github.com/CybOXProject/python-cybox/blob/master/examples/parse_xml.py
         observables_obj = cybox_core_binding.parse(input_file)
         observables = Observables.from_obj(observables_obj)
-        return observables.to_dict()
+        obs_data = observables.to_dict()
     else:
         with open(input_file, 'r') as f:
-            return json.load(input_file)
+            obs_data = json.load(input_file)
 
+    return obs_data
 
 def read_openioc(input_file):
-    pass
+    return False
+
 
 def search_splunk(connection, data):
-    for each in data:
+    s = "### BUILD SEARCH FROM data"
+    search_job = connection.jobs.create(s)
+    while not search_job.is_done():
+        sleep(0.2)
+    search_results = splunk_results.ResultsReader(search_job.results())
+    for result in search_results:
+        if isinstance(result, splunk_results.Message):
+            sys.stderr.write("%s: %s" % (result.type, result.message))
+        elif isinstance(result, dict):
+            print result
 
 
 def main():
@@ -62,12 +74,11 @@ def main():
     password = config.get('Splunk', 'password')
     try:
         splunk_connection = splunk_client.connect(host=host, port=port, username=username, password=password)
-    else:
+    except:
         sys.stderr.write('Could not connect to %s:%d as %s' % (host, port, username))
         return
 
-    if ioc_data:
-        search_splunk(splunk_connection, ioc_data)
+    search_splunk(splunk_connection, ioc_data)
 
 
 if __name__ == "__main__":
