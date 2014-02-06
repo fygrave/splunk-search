@@ -31,11 +31,16 @@ def read_cybox(input_file, isJson):
 
 
 def read_openioc(input_file):
+    # Stub
     return False
 
 
 def search_splunk(connection, data):
-    s = "### BUILD SEARCH FROM data"
+    s = ""
+    for each in data['ip_addresses']:
+        if s != "":
+            s += " OR "
+        s += "src=\"%s\" OR dst=\"%s\"" % (each, eac)
     search_job = connection.jobs.create(s)
     while not search_job.is_done():
         sleep(0.2)
