@@ -36,9 +36,9 @@ def read_openioc(input_file):
 
 
 def search_splunk(connection, data):
-    s = ""
+    s = "SEARCH "
     for each in data['ip_addresses']:
-        if s != "":
+        if s != "SEARCH ":
             s += " OR "
         s += each
     search_job = connection.jobs.create(s)
