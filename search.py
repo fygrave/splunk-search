@@ -40,7 +40,7 @@ def search_splunk(connection, data):
     for each in data['ip_addresses']:
         if s != "":
             s += " OR "
-        s += "src=\"%s\" OR dst=\"%s\"" % (each, eac)
+        s += each
     search_job = connection.jobs.create(s)
     while not search_job.is_done():
         sleep(0.2)
