@@ -14,14 +14,21 @@ import ConfigParser
 def read_cybox(input_file, isJson):
     if not isJson:
         # Based on https://github.com/CybOXProject/python-cybox/blob/master/examples/parse_xml.py
-        observables_obj = cybox_core_binding.parse(input_file)
-        observables = Observables.from_obj(observables_obj)
-        obs_data = observables.to_dict()
+        cybox_obj = cybox_core_binding.parse(input_file)
+        cybox_observables = Observables.from_obj(cybox_obj)
+        cybox_data = cybox_observables.to_dict()
     else:
         with open(input_file, 'r') as f:
-            obs_data = json.load(input_file)
+            cybox_data = json.load(input_file)
 
-    return obs_data
+    indicator_data = {'ip_addresses': []}
+
+    for each in cybox_data['observables']:
+        if each['object']['properties']['category'] == 'ipv4-addr':
+            indicator_data['ip_addresses'].append(each['object']['properties']['address_value'])
+
+    return indicator_data
+
 
 def read_openioc(input_file):
     return False
@@ -49,7 +56,6 @@ def main():
                        help="Type of file (optional). If specified, must be one of: cybox, cybox-json, openioc")
 
     args = parser.parse_args()
-    ioc_data = {}
 
     if args.filetype == "cybox":
         ioc_data = read_cybox(args.input_file, False)
