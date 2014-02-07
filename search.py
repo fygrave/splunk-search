@@ -13,7 +13,6 @@ import ConfigParser
 
 def read_cybox(input_file, isJson):
     if not isJson:
-        # Based on https://github.com/CybOXProject/python-cybox/blob/master/examples/parse_xml.py
         cybox_obj = cybox_core_binding.parse(input_file)
         cybox_observables = Observables.from_obj(cybox_obj)
         cybox_data = cybox_observables.to_dict()
