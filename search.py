@@ -37,9 +37,10 @@ def read_openioc(input_file):
 
 
 def search_splunk(connection, data):
+    # Needs significant additional logic in most environments
     s = "SEARCH "
     for each in data['ip_addresses']:
-        # don't need to add this the first time
+        # don't need to add this before the first or after the last indicator
         if s != "SEARCH ":
             s += " OR "
         s += each
@@ -62,7 +63,7 @@ def main():
     parser = argparse.ArgumentParser(description="Search Splunk for indicators in CybOX or OpenIOC files")
     parser.add_argument('input_file', help="Input file")
     parser.add_argument('-t', '--filetype', choices=['cybox', 'cybox-json', 'openioc'],
-                       help="Type of file (optional). If specified, must be one of: cybox, cybox-json, openioc")
+                        help="Type of file (optional). If specified, must be one of: cybox, cybox-json, openioc")
 
     args = parser.parse_args()
 
