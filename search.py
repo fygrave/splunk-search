@@ -21,8 +21,10 @@ def read_cybox(input_file, isJson):
         with open(input_file, 'r') as f:
             cybox_data = json.load(input_file)
 
+    # TODO: Add other indicator types
     indicator_data = {'ip_addresses': []}
 
+    # TODO: Support additional logic (build parse tree or similar?)
     for each in cybox_data['observables']:
         if each['object']['properties']['category'] == 'ipv4-addr':
             indicator_data['ip_addresses'].append(each['object']['properties']['address_value'])
@@ -38,9 +40,11 @@ def read_openioc(input_file):
 def search_splunk(connection, data):
     s = "SEARCH "
     for each in data['ip_addresses']:
+        # don't need to add this the first time
         if s != "SEARCH ":
             s += " OR "
         s += each
+    # TODO: Save search for future reference
     search_job = connection.jobs.create(s)
     while not search_job.is_done():
         sleep(0.2)
@@ -55,6 +59,7 @@ def search_splunk(connection, data):
 def main():
     config = ConfigParser.ConfigParser()
 
+    # TODO: Support output files
     parser = argparse.ArgumentParser(description="Search Splunk for indicators in CybOX or OpenIOC files")
     parser.add_argument('input_file', help="Input file")
     parser.add_argument('-t', '--filetype', choices=['cybox', 'cybox-json', 'openioc'],
