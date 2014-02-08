@@ -21,7 +21,8 @@ def read_cybox(input_file, isJson):
             cybox_data = json.load(input_file)
 
     # TODO: Add other indicator types
-    indicator_data = {'ip_addresses': []}
+    indicator_data = {'ip_addresses': [],
+                      'hostnames': [] }
 
     # TODO: Support additional logic (build parse tree or similar?)
     for each in cybox_data['observables']:
@@ -40,10 +41,11 @@ def search_splunk(connection, data):
     # Needs significant additional logic in most environments
     s = "SEARCH "
     for each in data['ip_addresses']:
-        # don't need to add this before the first or after the last indicator
+        # don't need to add this before the first or after the last indic=ator
         if s != "SEARCH ":
             s += " OR "
         s += each
+
     # TODO: Save search for future reference
     search_job = connection.jobs.create(s)
     while not search_job.is_done():
@@ -59,11 +61,11 @@ def search_splunk(connection, data):
 def main():
     config = ConfigParser.ConfigParser()
 
-    # TODO: Support output files
     parser = argparse.ArgumentParser(description="Search Splunk for indicators in CybOX or OpenIOC files")
     parser.add_argument('input_file', help="Input file")
     parser.add_argument('-t', '--filetype', choices=['cybox', 'cybox-json', 'openioc'],
                         help="Type of file (optional). If specified, must be one of: cybox, cybox-json, openioc")
+    parser.add_argument('-o', '--output_file', help="Output file")
 
     args = parser.parse_args()
 
@@ -94,7 +96,15 @@ def main():
         sys.stderr.write('Could not connect to %s:%d as %s' % (host, port, username))
         return
 
+    if args.output_file:
+        oldout = sys.stdout
+        sys.stdout = open(args.output_file)
+
     search_splunk(splunk_connection, ioc_data)
+
+    if args.output_file:
+        close(args.output_file)
+        sys.stdout = oldout
 
 
 if __name__ == "__main__":
