@@ -1,12 +1,16 @@
+#!/usr/bin/env python
 import argparse
 import json
 import sys
+from time import sleep
 
 import splunklib.client as splunk_client
 import splunklib.results as splunk_results
 import cybox.bindings.cybox_core as cybox_core_binding
 from cybox.core import Observables
 from cybox.objects.address_object import Address
+import lxml.objectify
+import time
 
 import ConfigParser
 
@@ -33,8 +37,18 @@ def read_cybox(input_file, isJson):
 
 
 def read_openioc(input_file):
+    indicator_data = { 'ip_addresses': [], 'hostnames': []}
+    d = lxml.objectify.parse(input_file)
+    root = d.getroot()
+    for i in root.findall(".//*/ns:IndicatorItem", namespaces={'ns':'http://schemas.mandiant.com/2010/ioc'}):
+        if i.Context.attrib.get("search") == "DnsEntryItem/Host":
+            indicator_data["hostnames"].append("%s"%i.Content)
+        if i.Context.attrib.get("search") == "PortItem/remoteIP":
+            indicator_data["ip_addresses"].append("%s"%i.Content)
+        #print('Op:%s search:%s content:%s'%(i.getparent().attrib.get("operator"), i.Context.attrib.get("search"),i.Content))
     # Stub
-    return False
+    print indicator_data
+    return indicator_data
 
 
 def search_splunk(connection, data):
